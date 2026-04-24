@@ -30,9 +30,7 @@ public class MockService {
 
     public ResponseMockDTO createApiMock(RequestMockDTO mockDTO, String username) {
 
-        User user = this.userRepository.findUserByUsername(username);
-
-        if (user == null) throw new UserNotFoundException("Usuario no encontrado");
+        User user = this.userRepository.findUserByUsername(username).orElseThrow(() -> new InvalidCredentialsException("Error de credenciales"));
 
         Mock newMock = this.mockMapper.toMock(mockDTO);
 
@@ -58,9 +56,7 @@ public class MockService {
     }
 
     public Map<String, Object> readJson(String url) {
-        Mock mock = this.mockRepository.findByUrl(url);
-
-        if (mock == null) throw new InvalidMockException("Error de mock");
+        Mock mock = this.mockRepository.findByUrl(url).orElseThrow(() -> new InvalidMockException("Error de mock"));
 
         mock.setLastUsageDate(LocalDateTime.now());
 
@@ -72,7 +68,7 @@ public class MockService {
     }
 
     public List<ResponseMockDTO> getAllMocks(String username) {
-        return this.mockRepository.getMocksByUserUsername(username).stream().map(mockMapper::toResponseDTO).toList();
+        return this.mockRepository.getMocksByUserUsername(username).stream().map(this.mockMapper::toResponseDTO).toList();
     }
 
     record MockUserRecord(Mock mock, User user) {
@@ -80,13 +76,7 @@ public class MockService {
     }
 
     private Mock getWrapper(String url, String username) {
-        Mock mock = this.mockRepository.findByUrl(url);
-
-        User user = this.userRepository.findUserByUsername(username);
-
-        if (mock == null) throw new InvalidMockException("Error de mock");
-
-        if (user == null) throw new InvalidCredentialsException("Error de credenciales");
+        Mock mock = this.mockRepository.findByUrl(url).orElseThrow(() -> new InvalidMockException("Error de mock"));
 
         if (mock.getUser() == null) throw new InvalidMockException("Error de mock");
 
