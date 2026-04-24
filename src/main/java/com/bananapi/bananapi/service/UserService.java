@@ -43,9 +43,7 @@ public class UserService {
     }
 
     public UserProfileDTO loginUser(UserLoginDTO userLoginDTO) {
-        User userLogin = this.userRepository.findUserByUsername(userLoginDTO.getUsername());
-
-        if (userLogin == null) throw new InvalidCredentialsException("Error de credenciales");
+        User userLogin = this.userRepository.findUserByUsername(userLoginDTO.getUsername()).orElseThrow(() -> new InvalidCredentialsException("Error de credenciales"));
 
         if (!passwordEncoder.matches(userLoginDTO.getPassword(), userLogin.getPassword()))
             throw new InvalidCredentialsException("Error de credenciales");
@@ -54,10 +52,7 @@ public class UserService {
     }
 
     public void updateUserPassword(String username, String oldPassword, String newPassword) {
-
-        User user = this.userRepository.findUserByUsername(username);
-
-        if (user == null) throw new InvalidCredentialsException("Error de credenciales");
+        User user = this.userRepository.findUserByUsername(username).orElseThrow(() -> new InvalidCredentialsException("Error de credenciales"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword()))
             throw new InvalidCredentialsException("Error de credenciales");
