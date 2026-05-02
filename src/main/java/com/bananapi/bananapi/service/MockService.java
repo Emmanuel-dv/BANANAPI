@@ -55,7 +55,7 @@ public class MockService {
         this.mockRepository.delete(getWrapper(url, username));
     }
 
-    public Map<String, Object> readJson(String url) {
+    public Map<String, Object> getJson(String url) {
         Mock mock = this.mockRepository.findByUrl(url).orElseThrow(() -> new InvalidMockException("Error de mock"));
 
         mock.setLastUsageDate(LocalDateTime.now());
@@ -67,7 +67,7 @@ public class MockService {
         return this.mockMapper.toResponseDTO(getWrapper(url, username));
     }
 
-    public List<ResponseMockDTO> getAllMocks(String username) {
+    public List<ResponseMockDTO> getAllUserMocks(String username) {
         return this.mockRepository.getMocksByUserUsername(username).stream().map(this.mockMapper::toResponseDTO).toList();
     }
 
