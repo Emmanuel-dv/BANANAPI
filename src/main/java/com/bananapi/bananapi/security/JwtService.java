@@ -29,9 +29,9 @@ public class JwtService {
 
     /**
      * Metodo para fabricar el token
-     * <p>
+     *
      * Cogemos el nombre de usuario y generamos el token metiendole la info del username, la fecha de creacion,la de caducidad y lo firmamos con nuestra clave secreta.
-     * <p>
+     *
      * El .compact() sirve para construir el JWT y entregarlo.
      *
      * @param username Nombre de usuario
