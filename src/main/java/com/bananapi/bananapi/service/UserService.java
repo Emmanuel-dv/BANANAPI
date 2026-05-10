@@ -3,13 +3,18 @@ package com.bananapi.bananapi.service;
 import com.bananapi.bananapi.domain.User;
 import com.bananapi.bananapi.dto.requestdto.UserLoginDTO;
 import com.bananapi.bananapi.dto.requestdto.UserRegistrationDTO;
+import com.bananapi.bananapi.dto.responsedto.AuthResponseDTO;
 import com.bananapi.bananapi.dto.responsedto.UserProfileDTO;
 import com.bananapi.bananapi.exceptions.InvalidCredentialsException;
 import com.bananapi.bananapi.exceptions.SamePasswordException;
 import com.bananapi.bananapi.exceptions.UserAlreadyExistsException;
 import com.bananapi.bananapi.repository.UserRepository;
+import com.bananapi.bananapi.security.JwtService;
 import com.bananapi.bananapi.utils.mappers.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +28,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     public UserProfileDTO registerUser(UserRegistrationDTO userRegistrationDTO) {
 
@@ -42,13 +49,18 @@ public class UserService {
         this.userRepository.deleteByUsername(username);
     }
 
-    public UserProfileDTO loginUser(UserLoginDTO userLoginDTO) {
-        User userLogin = this.userRepository.findUserByUsername(userLoginDTO.getUsername()).orElseThrow(() -> new InvalidCredentialsException("Error de credenciales"));
+    public AuthResponseDTO loginUser(UserLoginDTO userLoginDTO) {
 
-        if (!passwordEncoder.matches(userLoginDTO.getPassword(), userLogin.getPassword()))
-            throw new InvalidCredentialsException("Error de credenciales");
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        userLoginDTO.getUsername(),
+                        userLoginDTO.getPassword()
+                )
+        );
 
-        return userMapper.toUserProfileDTO(userLogin);
+        String token = this.jwtService.generateToken(userLoginDTO.getUsername());
+
+        return AuthResponseDTO.builder().token(token).build();
     }
 
     public void updateUserPassword(String username, String oldPassword, String newPassword) {
